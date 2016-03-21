@@ -42,10 +42,23 @@
 
         </RadioGroup>
 
-
-
-
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:onClick="onSaveButtonClick"
+            android:layout_weight="1"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Recover"
+            android:onClick="onRecoverButtonClick"
+            android:layout_weight="1"/>
+    </LinearLayout>
 
     <SearchView
         android:id="@+id/search_view"
@@ -57,9 +70,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="OK"/>
+
 
 </LinearLayout>
