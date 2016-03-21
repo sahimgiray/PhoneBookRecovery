@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.TextUtils;
@@ -15,6 +16,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -30,8 +33,15 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
     SimpleCursorAdapter cursorAdapter;
     String phoneNumber;
 
+    CustomAdapter adapter;
+
     static ArrayList <String> contact_name_list = new ArrayList<String>();
     static ArrayList <String> contact_phone_list = new ArrayList<String>();
+
+    List<String> turkcellList = new ArrayList<String>();
+    List<String> vodafoneList = new ArrayList<String>();
+    List<String> ttnetList = new ArrayList<String>();
+
     List <ContactInformations> contactInformationsArrayList = new ArrayList<ContactInformations>();
 
     @SuppressLint("InlinedApi")
@@ -54,35 +64,144 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        RadioGroup radioGroup = (RadioGroup) findViewById(R.id.button_group);
+
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, final int checkedId) {
+                // checkedId is the RadioButton selected
+
+                RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
+                String hat = checkedRadioButton.getText().toString();
+
+                if(hat.equals("Tttnet")) {
+                    reduceToTtnet();
+                }else if(hat.equals("Turkcell")) {
+                    reduceToTurkcell();
+                }else if(hat.equals("Vodafone")) {
+                    reduceToVodafone();
+                }else if(hat.equals("Restore All")) {
+                    restoreAll();
+                }
+
+            }
+        });
+
         searchView = (SearchView) findViewById(R.id.search_view);
         listView = (ListView) findViewById(R.id.list_view);
         numbers = getResources().getStringArray(R.array.numbers);
 
         searchView.setFocusable(false);
         listView.setTextFilterEnabled(true);
-        //listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, numbers));
-        /*cursorAdapter = new SimpleCursorAdapter(
-                this,
-                R.layout.contact_list_item,
-                null,
-                FROM_COLUMNS, TO_IDS,
-                0
-                );
-        listView.setAdapter(cursorAdapter);
-        listView.setTextFilterEnabled(true);
-        */
 
-        //getNumber(this.getContentResolver());
-        //CustomAdapter ca = new CustomAdapter(this,numbers);
-        //listView.setAdapter(ca);
-        //setUpSearchView();
         getNumber(this.getContentResolver());
         List<ArrayList> a = new ArrayList<ArrayList>();
         a.add(contact_name_list);
         a.add(contact_phone_list);
-        CustomAdapter adapter = new CustomAdapter(this,contact_name_list);
+        adapter = new CustomAdapter(this,contact_name_list);
         listView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
         setUpSearchView();
+    }
+
+    public void reduceToTurkcell() {
+        for(int i = 0; i < contact_name_list.size(); i++) {
+            String[] parts = contact_name_list.get(i).split("-");
+            String number = parts[1].replaceAll("[-+^:.]","");
+            //turkcellList.clear();
+            if(number.startsWith("0530") ||
+                    number.startsWith("0531") ||
+                    number.startsWith("0532") ||
+                    number.startsWith("0533") ||
+                    number.startsWith("0534") ||
+                    number.startsWith("0535") ||
+                    number.startsWith("0536") ||
+                    number.startsWith("0537") ||
+                    number.startsWith("0538") ||
+                    number.startsWith("0539")) {
+                turkcellList.add(contact_name_list.get(i));
+                //listView.setAdapter(new CustomAdapter(this,turkcellList));
+                adapter = new CustomAdapter(this,turkcellList);
+                //adapter.notifyDataSetChanged();
+                listView.destroyDrawingCache();
+                listView.setVisibility(ListView.INVISIBLE);
+                listView.setAdapter(adapter);
+                listView.setVisibility(ListView.VISIBLE);
+
+            }
+        }
+    }
+
+    public void reduceToVodafone() {
+        for(int i = 0; i < contact_name_list.size(); i++) {
+            String[] parts = contact_name_list.get(i).split("-");
+            String number = parts[1].replaceAll("[-+^:.]","");
+
+            if(number.startsWith("0540") ||
+                    number.startsWith("0541") ||
+                    number.startsWith("0542") ||
+                    number.startsWith("0543") ||
+                    number.startsWith("0544") ||
+                    number.startsWith("0545") ||
+                    number.startsWith("0546") ||
+                    number.startsWith("0547") ||
+                    number.startsWith("0548") ||
+                    number.startsWith("0549")) {
+                vodafoneList.add(contact_name_list.get(i));
+                //listView.setAdapter(new CustomAdapter(this,turkcellList));
+                adapter = new CustomAdapter(this,vodafoneList);
+                //adapter.notifyDataSetChanged();
+                listView.destroyDrawingCache();
+                listView.setVisibility(ListView.INVISIBLE);
+                listView.setAdapter(adapter);
+                listView.setVisibility(ListView.VISIBLE);
+                //turkcellList.clear();
+            }
+        }
+    }
+
+    public void reduceToTtnet() {
+        for(int i = 0; i < contact_name_list.size(); i++) {
+            String[] parts = contact_name_list.get(i).split("-");
+            String number = parts[1].replaceAll("[-+^:.]","");
+
+            if(number.startsWith("0505") ||
+                    number.startsWith("0506") ||
+                    number.startsWith("0507") ||
+                    number.startsWith("0555") ||
+                    number.startsWith("0556") ||
+                    number.startsWith("0557") ||
+                    number.startsWith("0558") ||
+                    number.startsWith("0559")) {
+                ttnetList.add(contact_name_list.get(i));
+                //listView.setAdapter(new CustomAdapter(this,turkcellList));
+                adapter = new CustomAdapter(this,ttnetList);
+                //adapter.notifyDataSetChanged();
+                listView.destroyDrawingCache();
+                listView.setVisibility(ListView.INVISIBLE);
+                listView.setAdapter(adapter);
+                listView.setVisibility(ListView.VISIBLE);
+                //turkcellList.clear();
+            }
+        }
+    }
+
+    public void restoreAll() {
+        for(int i = 0; i < contact_name_list.size(); i++) {
+            String[] parts = contact_name_list.get(i).split("-");
+            String number = parts[1].replaceAll("[-+^:.]","");
+
+
+
+                adapter = new CustomAdapter(this,contact_name_list);
+                //adapter.notifyDataSetChanged();
+                listView.destroyDrawingCache();
+                listView.setVisibility(ListView.INVISIBLE);
+                listView.setAdapter(adapter);
+                listView.setVisibility(ListView.VISIBLE);
+                turkcellList.clear();
+
+        }
     }
 
     public void getNumber(ContentResolver cr)
@@ -120,22 +239,7 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
 
         });
     }
-    //ContentResolver cr = this.getContentResolver();
-    /*public void onClick(View v) {
-        Cursor phones = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
-        while (phones.moveToNext())
-        {
-            String name=phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-            phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-            System.out.println(".................."+phoneNumber);
-            contact_name_list.add(phoneNumber);
-        }
-        phones.close();// close cursor
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1,contact_name_list);
-        listView.setAdapter(adapter);
-        //display contact numbers in the list
-    }*/
+
 
 
     @Override
