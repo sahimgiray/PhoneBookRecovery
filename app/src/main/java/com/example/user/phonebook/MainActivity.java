@@ -2,9 +2,13 @@ package com.example.user.phonebook;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -82,16 +86,16 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
                 RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
                 String hat = checkedRadioButton.getText().toString();
 
-                if(hat.equals("Tttnet")) {
+                if(hat.equals("TNet")) {
                     //ttnetList.clear();
                     List<String> list = getTtnetNumbers();
                     updateListView(list);
-                }else if(hat.equals("Turkcell")) {
+                }else if(hat.equals("Turk")) {
                     turkcellList.clear();
                     getTurkcellNumbers();
                     updateListView(turkcellList);
 
-                }else if(hat.equals("Vodafone")) {
+                }else if(hat.equals("Vod")) {
                     vodafoneList.clear();
                     getVodafoneNumbers();
                     updateListView(vodafoneList);
@@ -129,87 +133,6 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
         listView.setVisibility(ListView.VISIBLE);
     }
 
-    public void reduceToTurkcell() {
-        for(int i = 0; i < contact_name_list.size(); i++) {
-            String[] parts = contact_name_list.get(i).split("-");
-            String number = parts[1].replaceAll("[-+^:.]","");
-            //turkcellList.clear();
-            if(number.startsWith("0530") ||
-                    number.startsWith("0531") ||
-                    number.startsWith("0532") ||
-                    number.startsWith("0533") ||
-                    number.startsWith("0534") ||
-                    number.startsWith("0535") ||
-                    number.startsWith("0536") ||
-                    number.startsWith("0537") ||
-                    number.startsWith("0538") ||
-                    number.startsWith("0539")) {
-                turkcellList.add(contact_name_list.get(i));
-                //listView.setAdapter(new CustomAdapter(this,turkcellList));
-                adapter = new CustomAdapter(this,turkcellList);
-                //adapter.notifyDataSetChanged();
-                listView.destroyDrawingCache();
-                listView.setVisibility(ListView.INVISIBLE);
-                listView.setAdapter(adapter);
-                listView.setVisibility(ListView.VISIBLE);
-
-            }
-        }
-    }
-
-    public void reduceToVodafone() {
-        for(int i = 0; i < contact_name_list.size(); i++) {
-            String[] parts = contact_name_list.get(i).split("-");
-            String number = parts[1].replaceAll("[-+^:.]","");
-
-            if(number.startsWith("0540") ||
-                    number.startsWith("0541") ||
-                    number.startsWith("0542") ||
-                    number.startsWith("0543") ||
-                    number.startsWith("0544") ||
-                    number.startsWith("0545") ||
-                    number.startsWith("0546") ||
-                    number.startsWith("0547") ||
-                    number.startsWith("0548") ||
-                    number.startsWith("0549")) {
-                vodafoneList.add(contact_name_list.get(i));
-                //listView.setAdapter(new CustomAdapter(this,turkcellList));
-                adapter = new CustomAdapter(this,vodafoneList);
-                //adapter.notifyDataSetChanged();
-                listView.destroyDrawingCache();
-                listView.setVisibility(ListView.INVISIBLE);
-                listView.setAdapter(adapter);
-                listView.setVisibility(ListView.VISIBLE);
-                //turkcellList.clear();
-            }
-        }
-    }
-
-    public void reduceToTtnet() {
-        for(int i = 0; i < contact_name_list.size(); i++) {
-            String[] parts = contact_name_list.get(i).split("-");
-            String number = parts[1].replaceAll("[-+^:.]","");
-
-            if(number.startsWith("0505") ||
-                    number.startsWith("0506") ||
-                    number.startsWith("0507") ||
-                    number.startsWith("0555") ||
-                    number.startsWith("0556") ||
-                    number.startsWith("0557") ||
-                    number.startsWith("0558") ||
-                    number.startsWith("0559")) {
-                ttnetList.add(contact_name_list.get(i));
-                //listView.setAdapter(new CustomAdapter(this,turkcellList));
-                adapter = new CustomAdapter(this,ttnetList);
-                //adapter.notifyDataSetChanged();
-                listView.destroyDrawingCache();
-                listView.setVisibility(ListView.INVISIBLE);
-                listView.setAdapter(adapter);
-                listView.setVisibility(ListView.VISIBLE);
-                //turkcellList.clear();
-            }
-        }
-    }
 
     public void restoreAll() {
         for(int i = 0; i < contact_name_list.size(); i++) {
@@ -230,11 +153,55 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
     }
 
     public void onSaveButtonClick(View v) {
-        writeToFile(contact_name_list);
+        new AlertDialog.Builder(this)
+                .setTitle("Save Contacts")
+                .setMessage("Are you sure you want to save your contacts.Last save will be deleted?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        writeToFile(contact_name_list);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+
+
     }
 
     public void onRecoverButtonClick(View v) {
-        readFromFile();
+        new AlertDialog.Builder(this)
+                .setTitle("Recover Contacts")
+                .setMessage("Are you sure you want to recover contacts to last saved state?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        readFromFile();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+
+
+    }
+
+    private void deleteContacts() {
+        ContentResolver contentResolver = this.getContentResolver();
+        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+        while (cursor.moveToNext()) {
+            String lookupKey = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.LOOKUP_KEY));
+            Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey);
+            contentResolver.delete(uri, null, null);
+        }
     }
 
     private void writeToFile(List<String> values) {
@@ -254,7 +221,8 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
     }
 
     private String readFromFile() {
-
+        deleteContacts();
+        List<String> recoveredList = new ArrayList<>();
         String ret = "";
 
         try {
@@ -267,12 +235,20 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
                 StringBuilder stringBuilder = new StringBuilder();
 
                 while ( (receiveString = bufferedReader.readLine()) != null ) {
-                    stringBuilder.append(receiveString);
+                    //stringBuilder.append(receiveString);
+                    //System.out.println(receiveString);
+                    recoveredList.add(receiveString);
                 }
 
                 inputStream.close();
-                ret = stringBuilder.toString();
-                System.out.println(ret);
+
+                for(int i = 0; i < recoveredList.size(); i++) {
+                    String[] parts = recoveredList.get(i).split(" ");
+                    restoreContacts(parts[0],parts[1]);
+                }
+
+                //ret = stringBuilder.toString();
+                //System.out.println(ret);
             }else {
                 Toast.makeText(this,"There are no recovery files",Toast.LENGTH_LONG);
             }
@@ -285,6 +261,67 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
         }
 
         return ret;
+    }
+
+    public void restoreContacts(String DisplayName, String MobileNumber) {
+        /*String DisplayName = "XYZ";
+        String MobileNumber = "123456";
+        String HomeNumber = "1111";
+        String WorkNumber = "2222";
+        String emailID = "email@nomail.com";
+        String company = "bad";
+        String jobTitle = "abcd";*/
+        ArrayList < ContentProviderOperation > ops = new ArrayList < ContentProviderOperation > ();
+
+
+       // for(int i = 0; i < list.size(); i++) {
+            //String[] parts = list.get(i).split(" ");
+            ops.add(ContentProviderOperation.newInsert(
+                    ContactsContract.RawContacts.CONTENT_URI)
+                    .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
+                    .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
+                    .build());
+
+            //------------------------------------------------------ Names
+            if (DisplayName != null) {
+                ops.add(ContentProviderOperation.newInsert(
+                        ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                        .withValue(ContactsContract.Data.MIMETYPE,
+                                ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+                        .withValue(
+                                ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME,
+                                DisplayName).build());
+            }
+
+            //------------------------------------------------------ Mobile Number
+            if (MobileNumber != null) {
+                ops.add(ContentProviderOperation.
+                        newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                        .withValue(ContactsContract.Data.MIMETYPE,
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                        .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, MobileNumber)
+                        .withValue(ContactsContract.CommonDataKinds.Phone.TYPE,
+                                ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
+                        .build());
+            }
+
+
+       // }
+
+        try {
+            getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Exception: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
+
+
+
+        // Asking the Contact provider to create a new contact
+
     }
 
     public void getVodafoneNumbers() {
