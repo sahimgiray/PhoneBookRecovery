@@ -18,20 +18,20 @@
                 android:id="@+id/vodafone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Vodafone"
+                android:text="Vod"
                />
             <RadioButton
                 android:id="@+id/turkcell"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Turkcell"
+                android:text="Turk"
 
                 />
             <RadioButton
                 android:id="@+id/ttnet"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tttnet"
+                android:text="TNet"
                 />
             <RadioButton
                 android:id="@+id/restore_all"
