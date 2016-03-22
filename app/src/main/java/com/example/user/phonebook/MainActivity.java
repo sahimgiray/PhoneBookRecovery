@@ -83,11 +83,19 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
                 String hat = checkedRadioButton.getText().toString();
 
                 if(hat.equals("Tttnet")) {
-                    reduceToTtnet();
+                    //ttnetList.clear();
+                    List<String> list = getTtnetNumbers();
+                    updateListView(list);
                 }else if(hat.equals("Turkcell")) {
-                    reduceToTurkcell();
+                    turkcellList.clear();
+                    getTurkcellNumbers();
+                    updateListView(turkcellList);
+
                 }else if(hat.equals("Vodafone")) {
-                    reduceToVodafone();
+                    vodafoneList.clear();
+                    getVodafoneNumbers();
+                    updateListView(vodafoneList);
+
                 }else if(hat.equals("Restore All")) {
                     restoreAll();
                 }
@@ -110,6 +118,15 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
         listView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
         setUpSearchView();
+    }
+
+    public void updateListView(List<String> numbers) {
+        CustomAdapter adapter = new CustomAdapter(this,numbers);
+        //adapter.notifyDataSetChanged();
+        listView.destroyDrawingCache();
+        listView.setVisibility(ListView.INVISIBLE);
+        listView.setAdapter(adapter);
+        listView.setVisibility(ListView.VISIBLE);
     }
 
     public void reduceToTurkcell() {
@@ -256,15 +273,103 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
                 inputStream.close();
                 ret = stringBuilder.toString();
                 System.out.println(ret);
+            }else {
+                Toast.makeText(this,"There are no recovery files",Toast.LENGTH_LONG);
             }
         }
         catch (FileNotFoundException e) {
             Log.e("login activity", "File not found: " + e.toString());
+            Toast.makeText(this, "There are no recovery files", Toast.LENGTH_LONG);
         } catch (IOException e) {
             Log.e("login activity", "Can not read file: " + e.toString());
         }
 
         return ret;
+    }
+
+    public void getVodafoneNumbers() {
+        for(int i = 0; i < contact_name_list.size(); i++) {
+            String[] parts = contact_name_list.get(i).split("-");
+            String number = parts[1].replaceAll("[-+^:.]","");
+
+            if(number.startsWith("+90")) {
+                number = number.substring(3);
+
+            }else {
+                if(number.startsWith("0540") ||
+                        number.startsWith("0541") ||
+                        number.startsWith("0542") ||
+                        number.startsWith("0543") ||
+                        number.startsWith("0544") ||
+                        number.startsWith("0545") ||
+                        number.startsWith("0546") ||
+                        number.startsWith("0547") ||
+                        number.startsWith("0548") ||
+                        number.startsWith("0549")) {
+                    vodafoneList.add(contact_name_list.get(i));
+
+
+                }
+            }
+
+        }
+    }
+
+    public void getTurkcellNumbers() {
+        for(int i = 0; i < contact_name_list.size(); i++) {
+            String[] parts = contact_name_list.get(i).split("-");
+            String number = parts[1].replaceAll("[-+^:.]","");
+
+            if(number.startsWith("+90")) {
+                number = number.substring(3);
+
+            }else {
+                if(number.startsWith("0530") ||
+                        number.startsWith("0531") ||
+                        number.startsWith("0532") ||
+                        number.startsWith("0533") ||
+                        number.startsWith("0534") ||
+                        number.startsWith("0535") ||
+                        number.startsWith("0536") ||
+                        number.startsWith("0537") ||
+                        number.startsWith("0538") ||
+                        number.startsWith("0539")) {
+                    turkcellList.add(contact_name_list.get(i));
+                    //listView.setAdapter(new CustomAdapter(this,turkcellList));
+
+
+                }
+            }
+
+        }
+    }
+
+    public List<String> getTtnetNumbers() {
+        List<String> ttnetList = new ArrayList<>();
+        for(int i = 0; i < contact_name_list.size(); i++) {
+            String[] parts = contact_name_list.get(i).split("-");
+            String number = parts[1].replaceAll("[-+^:.]","");
+
+            if(number.startsWith("+90")) {
+                number = number.substring(3);
+
+            }else {
+                if(number.startsWith("0505") ||
+                        number.startsWith("0506") ||
+                        number.startsWith("0507") ||
+                        number.startsWith("0555") ||
+                        number.startsWith("0556") ||
+                        number.startsWith("0557") ||
+                        number.startsWith("0558") ||
+                        number.startsWith("0559")) {
+                    ttnetList.add(contact_name_list.get(i));
+                    //listView.setAdapter(new CustomAdapter(this,turkcellList));
+
+                }
+            }
+
+        }
+        return ttnetList;
     }
 
     public void getNumber(ContentResolver cr)
@@ -303,7 +408,18 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
         });
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        this.finish();
+    }
 
+    @Override
+    protected void onRestart() {
+        super.onResume();
+        getNumber(this.getContentResolver());
+        this.recreate();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
