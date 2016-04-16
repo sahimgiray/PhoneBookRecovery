@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -37,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends Activity implements SearchView.OnQueryTextListener {
+public class MainActivity extends ActionBarActivity implements SearchView.OnQueryTextListener {
 
     SearchView searchView;
     ListView listView;
@@ -135,6 +136,7 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
 
 
     public void restoreAll() {
+        getNumber(this.getContentResolver());
         for(int i = 0; i < contact_name_list.size(); i++) {
             String[] parts = contact_name_list.get(i).split("-");
             String number = parts[1].replaceAll("[-+^:.]","");
@@ -160,6 +162,9 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
                     public void onClick(DialogInterface dialog, int which) {
                         // continue with delete
                         writeToFile(contact_name_list);
+                        /*for(int i = 0; i < contact_name_list.size(); i++) {
+                            System.out.println(contact_name_list.get(i));
+                        }*/
                     }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -209,7 +214,7 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(this.openFileOutput("config.txt", Context.MODE_PRIVATE));
             for(int i = 0; i < values.size(); i++) {
                 String[] parts = values.get(i).split("-");
-                outputStreamWriter.write(parts[0]+" "+parts[1]);
+                outputStreamWriter.write(parts[0]+"-"+parts[1]);
                 outputStreamWriter.write("\n");
             }
             //OutputStreamWriter outputStreamWriter = new OutputStreamWriter(this.openFileOutput("config.txt", Context.MODE_PRIVATE));
@@ -243,7 +248,7 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
                 inputStream.close();
 
                 for(int i = 0; i < recoveredList.size(); i++) {
-                    String[] parts = recoveredList.get(i).split(" ");
+                    String[] parts = recoveredList.get(i).split("-");
                     restoreContacts(parts[0],parts[1]);
                 }
 
@@ -412,6 +417,9 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
     public void getNumber(ContentResolver cr)
     {
 
+        if(!contact_name_list.isEmpty()) {
+            contact_name_list.clear();
+        }
         Cursor phones = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
         while (phones.moveToNext())
         {
@@ -424,7 +432,8 @@ public class MainActivity extends Activity implements SearchView.OnQueryTextList
 
         }
         phones.close();// close cursor
-
+        //updateListView(contact_name_list);
+        //adapter.notifyDataSetChanged();
         //display contact numbers in the list
     }
 
