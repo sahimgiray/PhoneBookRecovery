@@ -7,6 +7,7 @@ import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -77,6 +78,16 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        try {
+            InputStream inputStream = openFileInput("config.txt");
+
+            if (inputStream == null) {
+                Toast.makeText(this,"You should take a back-up file!",Toast.LENGTH_LONG);
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
         RadioGroup radioGroup = (RadioGroup) findViewById(R.id.button_group);
 
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -87,16 +98,16 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
                 RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
                 String hat = checkedRadioButton.getText().toString();
 
-                if(hat.equals("TNet")) {
+                if(hat.equals("TürkTelekom")) {
                     //ttnetList.clear();
                     List<String> list = getTtnetNumbers();
                     updateListView(list);
-                }else if(hat.equals("Turk")) {
+                }else if(hat.equals("Turkcell")) {
                     turkcellList.clear();
                     getTurkcellNumbers();
                     updateListView(turkcellList);
 
-                }else if(hat.equals("Vod")) {
+                }else if(hat.equals("Vodafone")) {
                     vodafoneList.clear();
                     getVodafoneNumbers();
                     updateListView(vodafoneList);
@@ -121,7 +132,7 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
         a.add(contact_phone_list);
         adapter = new CustomAdapter(this,contact_name_list);
         listView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+        //adapter.notifyDataSetChanged();
         setUpSearchView();
     }
 
@@ -334,10 +345,10 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
             String[] parts = contact_name_list.get(i).split("-");
             String number = parts[1].replaceAll("[-+^:.]","");
 
-            if(number.startsWith("+90")) {
-                number = number.substring(3);
-
-            }else {
+            if(number.startsWith("+90 ")) {
+                number = number.substring(4);
+                number = "0"+number;
+            }
                 if(number.startsWith("0540") ||
                         number.startsWith("0541") ||
                         number.startsWith("0542") ||
@@ -352,7 +363,7 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
 
 
                 }
-            }
+
 
         }
     }
@@ -362,10 +373,10 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
             String[] parts = contact_name_list.get(i).split("-");
             String number = parts[1].replaceAll("[-+^:.]","");
 
-            if(number.startsWith("+90")) {
-                number = number.substring(3);
-
-            }else {
+            if(number.startsWith("+90 ")) {
+                number = number.substring(4);
+                number = "0"+number;
+            }
                 if(number.startsWith("0530") ||
                         number.startsWith("0531") ||
                         number.startsWith("0532") ||
@@ -381,7 +392,7 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
 
 
                 }
-            }
+
 
         }
     }
@@ -392,10 +403,10 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
             String[] parts = contact_name_list.get(i).split("-");
             String number = parts[1].replaceAll("[-+^:.]","");
 
-            if(number.startsWith("+90")) {
-                number = number.substring(3);
-
-            }else {
+            if(number.startsWith("+90 ")) {
+                number = number.substring(4);
+                number = "0"+number;
+            }
                 if(number.startsWith("0505") ||
                         number.startsWith("0506") ||
                         number.startsWith("0507") ||
@@ -408,7 +419,7 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
                     //listView.setAdapter(new CustomAdapter(this,turkcellList));
 
                 }
-            }
+
 
         }
         return ttnetList;
@@ -448,7 +459,10 @@ public class MainActivity extends ActionBarActivity implements SearchView.OnQuer
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String text = (String) listView.getItemAtPosition(position);
                 Toast.makeText(getBaseContext(), text, Toast.LENGTH_SHORT).show();
-
+                String[] parts = text.split("-");
+                Intent callIntent = new Intent(Intent.ACTION_DIAL);
+                callIntent.setData(Uri.parse("tel:"+parts[1]));
+                startActivity(callIntent);
             }
 
         });
